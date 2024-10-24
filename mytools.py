@@ -1,7 +1,7 @@
 import mykey
-from IPython.display import Markdown as render
 # mykey.py文件中存放SPARKAI_APP_ID等变量的值，例如：
 # SPARKAI_APP_ID = '575a00d1'
+from IPython.display import Markdown as render
 
 
 def mdContent(content: str, cssFile: str = "githubTheme.css") -> str:
@@ -153,7 +153,7 @@ def translate(中文内容: str) -> str:
     return dsllm(提示词)
 
 
-def genAnkiCard(学习内容: str, 文件名称: str) -> str:
+def genAnkiCardFile(学习内容: str, 文件名称: str) -> str:
     """
     根据给定的学习内容生成Anki学习卡片，并将结果保存到指定文件中。
 
@@ -276,3 +276,19 @@ def refineFunction(functionName: callable) -> str:
     </function>
     '''
     return dsllm(提示词)
+
+
+def saveContent(学习内容: str, 文件名称: str) -> str:
+    """
+    将指定的Markdown内容写入文件，并返回写入的内容。
+
+    参数:
+    学习内容 (str): 要写入文件的Markdown内容。
+    文件名称 (str): 目标文件的名称，包含文件路径。
+
+    返回值:
+    str: 写入文件的Markdown内容。
+    """
+    with open(文件名称, "w", encoding='UTF-8') as file:
+        file.write(学习内容)
+    return 学习内容
