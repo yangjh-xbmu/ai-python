@@ -1,4 +1,7 @@
+import pandas as pd
 import mykey
+from scipy import stats
+from tabulate import tabulate
 # mykey.py文件中存放SPARKAI_APP_ID等变量的值，例如：
 # SPARKAI_APP_ID = '575a00d1'
 from IPython.display import Markdown as render
@@ -292,3 +295,81 @@ def saveContent(学习内容: str, 文件名称: str) -> str:
     with open(文件名称, "w", encoding='UTF-8') as file:
         file.write(学习内容)
     return 学习内容
+
+
+def goodmanKruska_tau_y(df, x: str, y: str) -> float:
+    """ 取得条件次数表 """
+    cft = pd.crosstab(df[y], df[x], margins=True)
+    """ 取得全部个案数目 """
+    n = cft.at['All', 'All']
+    """ 初始化变量 """
+    E_1 = E_2 = tau_y = 0
+
+    """ 计算E_1 """
+    for i in range(cft.shape[0] - 1):
+        F_y = cft['All'][i]
+        E_1 += ((n - F_y) * F_y) / n
+    """ 计算E_2 """
+    for j in range(cft.shape[1] - 1):
+        for k in range(cft.shape[0] - 1):
+            F_x = cft.iloc[cft.shape[0] - 1, j]
+            f = cft.iloc[k, j]
+            E_2 += ((F_x - f) * f) / F_x
+    """ 计算tauy """
+    tau_y = (E_1 - E_2) / E_1
+
+    return tau_y
+
+
+def 相关系数强弱判断(相关系数值):
+    """ 相关系数强弱的判断 """
+    if 相关系数值 >= 0.8:
+        return '极强相关'
+    elif 相关系数值 >= 0.6:
+        return '强相关'
+    elif 相关系数值 >= 0.4:
+        return '中等程度相关'
+    elif 相关系数值 >= 0.2:
+        return '弱相关'
+    else:
+        return '极弱相关或无相关'
+
+
+def 两个无序类别变量的统计分析(数据表, 自变量, 因变量):
+    """ 对两个无序类别变量进行描述统计和推论统计，并给出辅助结论 """
+    # 计算相关系数
+    tau_y = goodmanKruska_tau_y(数据表, 自变量, 因变量)
+    # 制作交互分类表
+    交互表 = pd.crosstab(数据表[F"{自变量}"], 数据表[F"{因变量}"])
+    # 进行卡方检验
+    chi2, p, dof, ex = stats.chi2_contingency(交互表)
+
+    print(F"tau_y系数:{tau_y: 0.4f}", 相关系数判断(tau_y))
+    print(tabulate(交互表))
+    print(F"卡方值：{chi2: .2f}, p值：{p: .4f},自由度:{dof}。")
+    print(p值判断(p))
+
+
+def p值判断(p: float, α=0.05):
+    """ p值判断 """
+    if p <= α:
+        return '拒绝虚无假设'
+    else:
+        return '接受虚无假设'
+
+
+def 相关系数判断(系数: int):
+    """
+    判断相关系数的强弱
+
+    """
+    if 系数 >= 0.8:
+        return '极强相关'
+    elif 系数 >= 0.6:
+        return '强相关'
+    elif 系数 >= 0.4:
+        return '中等强度相关'
+    elif 系数 >= 0.2:
+        return '弱相关'
+    else:
+        return '极弱相关或无相关'
